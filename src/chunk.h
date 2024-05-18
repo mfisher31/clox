@@ -17,6 +17,7 @@ typedef struct Chunk {
 } Chunk;
 
 void initChunk (Chunk* chunk);
+void freeChunk (Chunk* chunk);
 void writeChunk (Chunk* chunk, uint8_t byte);
 
 #if __cplusplus

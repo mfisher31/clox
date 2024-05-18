@@ -1,12 +1,12 @@
 
-#include <cstdio>
+#include "chunk.h"
+#include "debug.h"
 
-#include "common.h"
-int main(int argc, char **argv) {
-    if(argc != 1) {
-        printf("%s takes no arguments.\n", argv[0]);
-        return 1;
-    }
-    printf("This is project %s.\n", "clux");
+int main(int, const char **) {
+    Chunk chunk;
+    initChunk (&chunk);
+    writeChunk (&chunk, OP_RETURN);
+    disassembleChunk (&chunk, "test chunk");
+    freeChunk (&chunk);
     return 0;
 }
