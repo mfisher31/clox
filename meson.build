@@ -5,8 +5,10 @@ project ('clox', [ 'c', 'cpp' ],
 exe = executable ('clox', 
   '''
     src/chunk.c
+    src/compiler.c
     src/debug.c
     src/memory.c
+    src/scanner.c
     src/value.c
     src/vm.c
     src/main.cpp
