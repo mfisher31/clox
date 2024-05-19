@@ -7,6 +7,7 @@ exe = executable ('clox',
     src/chunk.c
     src/debug.c
     src/memory.c
+    src/value.c
     src/main.cpp
   '''.split(),
   install : true)
