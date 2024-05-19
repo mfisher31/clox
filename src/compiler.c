@@ -20,15 +20,15 @@ typedef struct {
 
 typedef enum {
     PREC_NONE,
-    PREC_ASSIGNMENT,
-    PREC_OR,
-    PREC_AND,
-    PREC_EQUALITY,
-    PREC_COMPARISON,
-    PREC_TERM,
-    PREC_FACTOR,
-    PREC_UNARY,
-    PREC_CALL,
+    PREC_ASSIGNMENT, /// =
+    PREC_OR,         /// or
+    PREC_AND,        /// and
+    PREC_EQUALITY,   /// == !=
+    PREC_COMPARISON, /// < > <= >=
+    PREC_TERM,       /// + -
+    PREC_FACTOR,     /// * /
+    PREC_UNARY,      /// ! -
+    PREC_CALL,       /// . ()
     PREC_PRIMARY
 } Precedence;
 
@@ -57,6 +57,7 @@ static void errorAt (Token* token, const char* message) {
     parser.panicMode = true;
 
     fprintf (stderr, "[line %d] Error", token->line);
+
     if (token->type == TOKEN_EOF) {
         fprintf (stderr, " at end");
     } else if (token->type == TOKEN_ERROR) {
@@ -84,6 +85,7 @@ static void advance() {
         parser.current = scanToken();
         if (parser.current.type != TOKEN_ERROR)
             break;
+
         errorAtCurrent (parser.current.start);
     }
 }
@@ -109,6 +111,19 @@ static void emitBytes (uint8_t b1, uint8_t b2) {
     emitByte (b2);
 }
 
+static uint8_t makeConstant (Value value) {
+    int constant = addConstant (currentChunk(), value);
+    if (constant > UINT8_MAX) {
+        error ("To many constants in one chunk.");
+        return 0x00;
+    }
+    return (uint8_t) constant;
+}
+
+static void emitConstant (Value value) {
+    emitBytes (OP_CONSTANT, makeConstant (value));
+}
+
 static void emitReturn() {
     emitByte (OP_RETURN);
 }
@@ -122,6 +137,7 @@ static void endCompiler() {
 #endif
 }
 
+//==============================================================================
 static void binary() {
     TokenType operatorType = parser.previous.type;
     ParseRule* rule        = getRule (operatorType);
@@ -147,19 +163,6 @@ static void binary() {
 static void grouping() {
     expression();
     consume (TOKEN_RIGHT_PAREN, "Expect ') after expression");
-}
-
-static uint8_t makeConstant (Value value) {
-    int constant = addConstant (currentChunk(), value);
-    if (constant > UINT8_MAX) {
-        error ("To many constants in one chunk.");
-        return 0x00;
-    }
-    return (uint8_t) constant;
-}
-
-static void emitConstant (Value value) {
-    emitBytes (OP_CONSTANT, makeConstant (value));
 }
 
 static void number() {
@@ -227,6 +230,7 @@ ParseRule rules[] = {
 
 static void parsePrecedence (Precedence precedence) {
     advance();
+
     ParseFn prefixRule = getRule (parser.previous.type)->prefix;
     if (prefixRule == NULL) {
         error ("expect expression");
@@ -235,7 +239,7 @@ static void parsePrecedence (Precedence precedence) {
 
     prefixRule();
 
-    while (precedence <= getRule (parser.previous.type)->precedence) {
+    while (precedence <= getRule (parser.current.type)->precedence) {
         advance();
         ParseFn infixRule = getRule (parser.previous.type)->infix;
         infixRule();
@@ -250,11 +254,14 @@ bool compile (const char* code, Chunk* chunk) {
     initScanner (code);
     compilingChunk = chunk;
 
-    parser.hadError = parser.panicMode = false;
+    parser.hadError  = false;
+    parser.panicMode = false;
 
     advance();
     expression();
     consume (TOKEN_EOF, "Expect end of expression.");
+
     endCompiler();
+
     return ! parser.hadError;
 }

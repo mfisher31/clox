@@ -80,10 +80,12 @@ InterpretResult interpret (const char* code) {
         freeChunk (&chunk);
         return INTERPRET_COMPILE_ERROR;
     }
+
     vm.chunk = &chunk;
     vm.ip    = vm.chunk->code;
 
     const InterpretResult res = run();
+
     freeChunk (&chunk);
     return res;
 }
