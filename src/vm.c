@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "common.h"
+#include "compiler.h"
 #include "debug.h"
 #include "vm.h"
 
@@ -72,8 +73,19 @@ static InterpretResult run() {
 }
 
 InterpretResult interpret (const char* code) {
-    compile (code);
-    return INTERPRET_OK;
+    Chunk chunk;
+    initChunk (&chunk);
+
+    if (! compile (code, &chunk)) {
+        freeChunk (&chunk);
+        return INTERPRET_COMPILE_ERROR;
+    }
+    vm.chunk = &chunk;
+    vm.ip    = vm.chunk->code;
+
+    const InterpretResult res = run();
+    freeChunk (&chunk);
+    return res;
 }
 
 void push (Value value) {
