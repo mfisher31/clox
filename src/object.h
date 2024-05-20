@@ -9,6 +9,7 @@ typedef enum {
 
 struct Obj {
     ObjType type;
+    Obj* next;
 };
 
 struct ObjString {
@@ -18,13 +19,14 @@ struct ObjString {
 };
 
 static inline bool isObjType (Value value, ObjType type) {
-    return IS_OBJ(value) && AS_OBJ(value)->type == type;
+    return IS_OBJ (value) && AS_OBJ (value)->type == type;
 }
 
-#define OBJ_TYPE(obj) (AS_OBJ(value)->type)
-#define IS_STRING(value) isObjType(value, OBJ_STRING)
-#define AS_STRING(value) ((ObjString*)AS_OBJ(value))
-#define AS_CSTRING(value) (((ObjString*)AS_OBJ(value))->chars)
+#define OBJ_TYPE(obj)     (AS_OBJ (value)->type)
+#define IS_STRING(value)  isObjType (value, OBJ_STRING)
+#define AS_STRING(value)  ((ObjString*) AS_OBJ (value))
+#define AS_CSTRING(value) (((ObjString*) AS_OBJ (value))->chars)
 
+ObjString* takeString (char* str, int length);
 ObjString* copyString (const char* str, int length);
 void printObject (Value value);
