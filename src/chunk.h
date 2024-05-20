@@ -15,6 +15,7 @@ typedef enum OpCode {
     OP_FALSE,
     OP_POP,
     OP_DEFINE_GLOBAL,
+    OP_GET_GLOBAL,
     OP_EQUAL,
     OP_GREATER,
     OP_LESS,
