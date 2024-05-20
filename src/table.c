@@ -21,7 +21,7 @@ void freeTable (Table* table) {
 }
 
 static Entry* findEntry (Entry* entries, int capacity, ObjString* key) {
-    uint32_t index   = key->hash % capacity;
+    uint32_t index   = key->hash % (uint32_t) capacity;
     Entry* tombstone = NULL;
 
     for (;;) {
@@ -63,7 +63,8 @@ static void adjustCapacity (Table* table, int capacity) {
     }
 
     FREE_ARRAY (Entry, table->entries, table->capacity);
-    table->entries = entries;
+    table->capacity = capacity;
+    table->entries  = entries;
 }
 
 bool tableGet (Table* table, ObjString* key, Value* value) {
