@@ -197,6 +197,9 @@ static void unary() {
         case TOKEN_MINUS:
             emitByte (OP_NEGATE);
             break;
+        case TOKEN_BANG:
+            emitByte (OP_NOT);
+            break;
         default:
             return; // unreachable.
     }
@@ -221,7 +224,7 @@ ParseRule rules[] = {
     [TOKEN_LESS_EQUAL]    = { NULL, NULL, PREC_NONE },
     [TOKEN_GREATER]       = { NULL, NULL, PREC_NONE },
     [TOKEN_GREATER_EQUAL] = { NULL, NULL, PREC_NONE },
-    [TOKEN_BANG]          = { NULL, NULL, PREC_NONE },
+    [TOKEN_BANG]          = { unary, NULL, PREC_NONE },
     [TOKEN_BANG_EQUAL]    = { NULL, NULL, PREC_NONE },
 
     [TOKEN_IDENTIFIER] = { NULL, NULL, PREC_NONE },
