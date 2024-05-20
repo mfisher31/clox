@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "scanner.h"
@@ -31,10 +32,11 @@ static bool isAtEnd() {
 }
 
 //==============================================================================
-static bool checkKeyword (int start, int length, const char* rest, TokenType type) {
+static TokenType checkKeyword (int start, int length, const char* rest, TokenType type) {
     if (scanner.current - scanner.start == start + length && memcmp (scanner.start + start, rest, length) == 0) {
         return type;
     }
+
     return TOKEN_IDENTIFIER;
 }
 
@@ -44,6 +46,9 @@ static Token makeToken (TokenType type) {
     token.start  = scanner.start;
     token.length = (int) (scanner.current - scanner.start);
     token.line   = scanner.line;
+
+    // printf("make token: %.*s, %d\n", token.length, token.start, type);
+
     return token;
 }
 
@@ -163,7 +168,7 @@ static TokenType identifierType() {
                         return checkKeyword (2, 1, "r", TOKEN_FOR);
                         break;
                     case 'u':
-                        return checkKeyword (2, 1, "n", TOKEN_FALSE);
+                        return checkKeyword (2, 1, "n", TOKEN_FUN);
                         break;
                 }
             }
@@ -191,6 +196,7 @@ static TokenType identifierType() {
 static Token identifier() {
     while (isAlpha (peek()) || isDigit (peek()))
         advance();
+
     return makeToken (identifierType());
 }
 
@@ -202,6 +208,7 @@ Token scanToken() {
         return makeToken (TOKEN_EOF);
 
     char c = advance();
+
     if (isDigit (c))
         return number();
     if (isAlpha (c))

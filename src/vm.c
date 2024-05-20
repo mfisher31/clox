@@ -64,6 +64,7 @@ static InterpretResult run() {
 #endif
 
         uint8_t instruction;
+        // clang-format off
         switch (instruction = READ_BYTE()) {
             case OP_CONSTANT: {
                 Value constant = READ_CONSTANT();
@@ -71,32 +72,32 @@ static InterpretResult run() {
                 break;
             }
 
-            case OP_ADD:
-                BINARY_OP (NUMBER_VAL, +);
-                break;
-            case OP_SUBTRACT:
-                BINARY_OP (NUMBER_VAL, -);
-                break;
-            case OP_MULTIPLY:
-                BINARY_OP (NUMBER_VAL, *);
-                break;
-            case OP_DIVIDE:
-                BINARY_OP (NUMBER_VAL, /);
-                break;
+            case OP_NIL:    push(NIL_VAL); break;
+            case OP_FALSE:  push(BOOL_VAL(false)); break;
+            case OP_TRUE:   push(BOOL_VAL(true)); break;
+
+            case OP_ADD:        BINARY_OP (NUMBER_VAL, +); break;
+            case OP_SUBTRACT:   BINARY_OP (NUMBER_VAL, -); break;
+            case OP_MULTIPLY:   BINARY_OP (NUMBER_VAL, *); break;
+            case OP_DIVIDE:     BINARY_OP (NUMBER_VAL, /); break;
 
             case OP_NEGATE: {
-                if (! IS_NUMBER (peek (0))) {
+                printf("negate!\n");
+                if (! IS_NUMBER (peek (0))) {                    
                     runtimeError ("Operand must be a number.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 push (NUMBER_VAL (-AS_NUMBER (pop())));
                 break;
             }
-            case OP_RETURN:
+
+            case OP_RETURN: {
                 printValue (pop());
                 printf ("\n");
                 return INTERPRET_OK;
+            }
         }
+        // clang-format on
     }
 #undef READ_BYTE
 }
