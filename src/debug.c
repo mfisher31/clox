@@ -51,6 +51,16 @@ int disassembleInstruction (Chunk* chunk, int offset) {
             return simpleInstruction ("OP_TRUE", offset);
             break;
 
+        case OP_EQUAL:
+            return simpleInstruction ("OP_EQUAL", offset);
+            break;
+        case OP_GREATER:
+            return simpleInstruction ("OP_GREATER", offset);
+            break;
+        case OP_LESS:
+            return simpleInstruction ("OP_LESS", offset);
+            break;
+
         case OP_ADD:
             return simpleInstruction ("OP_ADD", offset);
             break;
