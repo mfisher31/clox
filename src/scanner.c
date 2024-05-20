@@ -158,6 +158,9 @@ static TokenType identifierType() {
         case 'r':
             return checkKeyword (1, 5, "eturn", TOKEN_RETURN);
             break;
+        case 'p':
+            return checkKeyword (1, 4, "rint", TOKEN_PRINT);
+            break;
 
         case 'f': {
             if (scanner.current - scanner.start > 1) {
@@ -229,10 +232,10 @@ Token scanToken() {
             return makeToken (TOKEN_RIGHT_BRACE);
             break;
         case ';':
-            return makeToken (TOKEN_RIGHT_BRACE);
+            return makeToken (TOKEN_SEMICOLON);
             break;
         case ',':
-            return makeToken (TOKEN_RIGHT_BRACE);
+            return makeToken (TOKEN_COMMA);
             break;
 
         case '.':
