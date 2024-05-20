@@ -18,10 +18,7 @@ bool valuesEqual (Value a, Value b) {
         case VAL_NUMBER:
             return AS_NUMBER (a) == AS_NUMBER (b);
         case VAL_OBJ: {
-            ObjString* as = AS_STRING (a);
-            ObjString* bs = AS_STRING (b);
-            return as->length == bs->length && 
-                0 == memcmp (as->chars, bs->chars, (size_t) as->length);
+            return AS_OBJ(a) == AS_OBJ(b);
         }
         default:
             return false;
