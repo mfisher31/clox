@@ -48,7 +48,14 @@ typedef struct {
     int depth;
 } Local;
 
+typedef enum {
+    TYPE_FUNCTION,
+    TYPE_SCRIPT
+} FunctionType;
+
 typedef struct {
+    ObjFunction* function;
+    FunctionType type;
     Local locals[UINT8_COUNT];
     int localCount;
     int scopeDepth;
@@ -76,7 +83,9 @@ void initCompiler (Compiler* compiler) {
 }
 
 //==============================================================================
-Chunk* currentChunk() { return compilingChunk; }
+Chunk* currentChunk() {
+    return compilingChunk; //&current->function->chunk;
+}
 
 static void errorAt (Token* token, const char* message) {
     if (parser.panicMode)
@@ -143,6 +152,16 @@ static void emitByte (uint8_t byte) {
 static void emitBytes (uint8_t b1, uint8_t b2) {
     emitByte (b1);
     emitByte (b2);
+}
+
+static int emitLoop (int loopStart) {
+    emitByte (OP_LOOP);
+    int offset = currentChunk()->count - loopStart + 2;
+    if (offset > UINT16_MAX)
+        error ("Loop body too large.");
+    emitByte ((offset >> 8) && 0xff);
+    emitByte (offset & 0xff);
+    return offset;
 }
 
 static int emitJump (uint8_t instruction) {
@@ -230,6 +249,23 @@ static void ifStatement() {
     patchJump (elseJump);
 }
 
+static void whileStatement() {
+    int loopStart = currentChunk()->count;
+
+    consume (TOKEN_LEFT_PAREN, "Expect '(' after 'while'.");
+    expression();
+    consume (TOKEN_RIGHT_PAREN, "Expect ')' after 'condition'.");
+
+    const int exitJump = emitJump (OP_JUMP_IF_FALSE);
+    emitByte (OP_POP);
+    statement();
+    emitLoop (loopStart);
+
+    // pg. 422
+    patchJump (exitJump);
+    emitByte (OP_POP);
+}
+
 static void synchronize() {
     parser.panicMode = false;
     while (parser.current.type != TOKEN_EOF) {
@@ -288,6 +324,8 @@ static void statement() {
         printStatement();
     } else if (match (TOKEN_IF)) {
         ifStatement();
+    } else if (match (TOKEN_WHILE)) {
+        whileStatement();
     } else if (match (TOKEN_LEFT_BRACE)) {
         beginScope();
         block();
@@ -436,6 +474,28 @@ static void unary (bool) {
     }
 }
 
+static void and_ (bool) {
+    // p 420
+    int endJump = emitJump (OP_JUMP_IF_FALSE);
+
+    emitByte (OP_POP);
+    parsePrecedence (PREC_AND);
+
+    patchJump (endJump);
+}
+
+static void or_ (bool) {
+    // p 421
+    int elseJump = emitJump (OP_JUMP_IF_FALSE);
+    int endJump  = emitJump (OP_JUMP);
+
+    patchJump (elseJump);
+    emitByte (OP_POP);
+
+    parsePrecedence (PREC_OR);
+    patchJump (endJump);
+}
+
 ParseRule rules[] = {
     [TOKEN_LEFT_PAREN]  = { grouping, NULL, PREC_NONE },
     [TOKEN_RIGHT_PAREN] = { NULL, NULL, PREC_NONE },
@@ -462,7 +522,7 @@ ParseRule rules[] = {
     [TOKEN_STRING]     = { string, NULL, PREC_NONE },
     [TOKEN_NUMBER]     = { number, NULL, PREC_NONE },
 
-    [TOKEN_AND]    = { NULL, NULL, PREC_NONE },
+    [TOKEN_AND]    = { NULL, and_, PREC_AND },
     [TOKEN_CLASS]  = { NULL, NULL, PREC_NONE },
     [TOKEN_ELSE]   = { NULL, NULL, PREC_NONE },
     [TOKEN_FALSE]  = { literal, NULL, PREC_NONE },
@@ -470,7 +530,7 @@ ParseRule rules[] = {
     [TOKEN_FUN]    = { NULL, NULL, PREC_NONE },
     [TOKEN_IF]     = { NULL, NULL, PREC_NONE },
     [TOKEN_NIL]    = { literal, NULL, PREC_NONE },
-    [TOKEN_OR]     = { NULL, NULL, PREC_NONE },
+    [TOKEN_OR]     = { NULL, or_, PREC_NONE },
     [TOKEN_PRINT]  = { NULL, NULL, PREC_NONE },
     [TOKEN_RETURN] = { NULL, NULL, PREC_NONE },
     [TOKEN_SUPER]  = { NULL, NULL, PREC_NONE },

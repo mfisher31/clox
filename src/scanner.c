@@ -161,7 +161,9 @@ static TokenType identifierType() {
         case 'p':
             return checkKeyword (1, 4, "rint", TOKEN_PRINT);
             break;
-
+        case 'w':
+            return checkKeyword (1, 4, "hile", TOKEN_WHILE);
+            break;
         case 'f': {
             if (scanner.current - scanner.start > 1) {
                 switch (scanner.start[1]) {

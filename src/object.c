@@ -37,6 +37,14 @@ static uint32_t hashString (const char* key, int length) {
     return hash;
 }
 
+ObjFunction* newFunction() {
+    ObjFunction* f = ALLOCATE_OBJ (ObjFunction, OBJ_FUNCTION);
+    f->arity       = 0;
+    f->name        = NULL;
+    initChunk (&f->chunk);
+    return f;
+}
+
 ObjString* takeString (char* str, int length) {
     uint32_t hash       = hashString (str, length);
     ObjString* interned = tableFindString (&vm.strings, str, length, hash);
@@ -60,10 +68,17 @@ ObjString* copyString (const char* chars, int length) {
     return allocateString (heapChars, length, hash);
 }
 
+void printFunction (ObjFunction* function) {
+    printf ("<fn %s>", function->name->chars);
+}
+
 void printObject (Value value) {
     switch (OBJ_TYPE (value)) {
         case OBJ_STRING:
             printf ("%s", AS_CSTRING (value));
+            break;
+        case OBJ_FUNCTION:
+            printFunction (AS_FUNCTION (value));
             break;
     }
 }
