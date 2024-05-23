@@ -1,0 +1,14 @@
+var hello = "Hello";
+var world = "World!";
+print hello + " " + world;
+
+var res = ((1 + 2) / 300) * 10000.0;
+if (res == 100) {
+    print "it worked";
+}
+
+var i = 0;
+while (i < 10) {
+    print i;
+    i = i + 1;
+}

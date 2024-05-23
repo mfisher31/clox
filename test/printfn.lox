@@ -1,0 +1,5 @@
+fun doit() { print "0 done did it"; }
+fun doit2() { return "a string"; }
+doit();
+doit();
+print doit2();
