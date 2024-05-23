@@ -62,7 +62,10 @@ typedef struct Compiler {
 
 Parser parser;
 Compiler* current = NULL;
-Chunk* compilingChunk;
+
+Chunk* currentChunk() {
+    return &current->function->chunk;
+}
 
 //==============================================================================
 static void expression();
@@ -100,9 +103,6 @@ void initCompiler (Compiler* compiler, FunctionType type) {
 }
 
 //==============================================================================
-Chunk* currentChunk() {
-    return &current->function->chunk;
-}
 
 static void errorAt (Token* token, const char* message) {
     if (parser.panicMode)
@@ -214,7 +214,6 @@ static void patchJump (int offset) {
 }
 
 static void emitReturn() {
-    printf ("emitReturn()\n");
     emitByte (OP_NIL);
     emitByte (OP_RETURN);
 }
@@ -261,11 +260,13 @@ static void printStatement() {
 }
 
 static void returnStatement() {
+    if (current->type == TYPE_SCRIPT) {
+        error("Can't return from top-level code.");
+    }
+
     if (match (TOKEN_SEMICOLON)) {
         emitReturn();
-        printf ("emitReturn()\n");
     } else {
-        printf ("return with expression\n");
         expression();
         consume (TOKEN_SEMICOLON, "Expect ';' after return value.");
         emitByte (OP_RETURN);
@@ -722,7 +723,6 @@ ObjFunction* compile (const char* code) {
     initScanner (code);
     Compiler compiler;
     initCompiler (&compiler, TYPE_SCRIPT);
-    // compilingChunk = chunk;
 
     parser.hadError  = false;
     parser.panicMode = false;

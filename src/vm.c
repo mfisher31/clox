@@ -58,6 +58,7 @@ static Value peek (int distance) {
 }
 
 static bool call (ObjFunction* function, int argCount) {
+    // p. 453
     if (argCount != function->arity) {
         runtimeError ("Expected %d arguments but got %d.",
                       function->arity,
@@ -141,7 +142,7 @@ static InterpretResult run() {
             printf ("]");
         }
         printf ("\n");
-        disassembleInstruction (vm.chunk, (int) (frame->ip - frame->function->chunk.code));
+        disassembleInstruction (&frame->function->chunk, (int) (frame->ip - frame->function->chunk.code));
 #endif
 
         uint8_t instruction;
@@ -273,19 +274,18 @@ static InterpretResult run() {
                 frame = &vm.frames[vm.frameCount - 1];
                 break;
             }
+
             case OP_RETURN: {
                 Value result = pop();
                 vm.frameCount--;
                 if (vm.frameCount == 0) {
                     pop();
-                    printf("pop root fn\n");
                     return INTERPRET_OK;
                 }
 
                 vm.stackTop = frame->slots;
                 push(result);
                 frame = &vm.frames[vm.frameCount - 1];
-                return INTERPRET_OK;
             }
         }
         // clang-format on
