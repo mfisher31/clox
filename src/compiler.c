@@ -81,8 +81,8 @@ static uint8_t parseVariable (const char* errorMessage);
 
 static ObjFunction* endCompiler();
 
-static void beginScope() ;
-static void endScope() ;
+static void beginScope();
+static void endScope();
 
 //==============================================================================
 void initCompiler (Compiler* compiler, FunctionType type) {
@@ -269,30 +269,30 @@ static void forStatement() {
     }
 
     int loopStart = currentChunk()->count;
-    int exitJump = -1;
+    int exitJump  = -1;
 
     if (! match (TOKEN_SEMICOLON)) {
         expression();
-        consume(TOKEN_SEMICOLON, "Expect ';' after loop condition");
+        consume (TOKEN_SEMICOLON, "Expect ';' after loop condition");
         // jump out if the expression resolves false.
-        exitJump = emitJump(OP_JUMP_IF_FALSE);
+        exitJump = emitJump (OP_JUMP_IF_FALSE);
         emitByte (OP_POP);
     }
 
     if (! match (TOKEN_RIGHT_PAREN)) {
-        int bodyJump = emitJump(OP_JUMP);
+        int bodyJump       = emitJump (OP_JUMP);
         int incrementStart = currentChunk()->count;
         expression();
-        emitByte(OP_POP);
+        emitByte (OP_POP);
         consume (TOKEN_RIGHT_PAREN, "Expect ')' after for cluases.");
 
-        emitLoop(loopStart);
+        emitLoop (loopStart);
         loopStart = incrementStart;
         patchJump (bodyJump);
     }
 
     statement();
-    emitLoop(loopStart);
+    emitLoop (loopStart);
 
     if (exitJump != -1) {
         patchJump (exitJump);
@@ -310,7 +310,7 @@ static void printStatement() {
 
 static void returnStatement() {
     if (current->type == TYPE_SCRIPT) {
-        error("Can't return from top-level code.");
+        error ("Can't return from top-level code.");
     }
 
     if (match (TOKEN_SEMICOLON)) {

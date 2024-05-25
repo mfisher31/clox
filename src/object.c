@@ -45,6 +45,12 @@ ObjFunction* newFunction() {
     return f;
 }
 
+ObjNative* newNative (NativeFn function) {
+    ObjNative* f = ALLOCATE_OBJ (ObjNative, OBJ_NATIVE);
+    f->function  = function;
+    return f;
+}
+
 ObjString* takeString (char* str, int length) {
     uint32_t hash       = hashString (str, length);
     ObjString* interned = tableFindString (&vm.strings, str, length, hash);
@@ -84,6 +90,9 @@ void printObject (Value value) {
             break;
         case OBJ_FUNCTION:
             printFunction (AS_FUNCTION (value));
+            break;
+        case OBJ_NATIVE:
+            printf ("<native fn>");
             break;
     }
 }

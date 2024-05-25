@@ -3,5 +3,7 @@ fun fib(n) {
         return n;
     return fib(n - 2) + fib(n - 1);
 }
+
+var start = clock();
 var res = fib(35);
-print res;
+print clock() - start;

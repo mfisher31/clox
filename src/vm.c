@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include "common.h"
 #include "compiler.h"
@@ -40,11 +41,27 @@ static void runtimeError (const char* format, ...) {
     resetStack();
 }
 
+static void defineNative (const char* name, NativeFn fn) {
+    push (OBJ_VAL (copyString (name, (int) strlen (name))));
+    push (OBJ_VAL (newNative (fn)));
+    tableSet (&vm.globals, AS_STRING (vm.stack[0]), vm.stack[1]);
+    pop();
+    pop();
+}
+
+static Value clockNative (int n, Value* args) {
+    (void) n;
+    (void) args;
+    return NUMBER_VAL ((double) clock() / CLOCKS_PER_SEC);
+}
+
 void initVM() {
     resetStack();
     vm.objects = NULL;
     initTable (&vm.globals);
     initTable (&vm.strings);
+
+    defineNative ("clock", clockNative);
 }
 
 void freeVM() {
@@ -83,6 +100,15 @@ static bool callValue (Value callee, int argCount) {
         switch (OBJ_TYPE (callee)) {
             case OBJ_FUNCTION:
                 return call (AS_FUNCTION (callee), argCount);
+            case OBJ_NATIVE: {
+                NativeFn native = AS_NATIVE (callee);
+                Value result    = native (argCount, vm.stackTop - argCount);
+                vm.stackTop -= argCount + 1;
+                push (result);
+                return true;
+                break;
+            }
+
             default:
                 break; // not callable
         }
