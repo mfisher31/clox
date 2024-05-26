@@ -67,6 +67,8 @@ void initVM() {
 
     initTable (&vm.globals);
     initTable (&vm.strings);
+    vm.initString = nullptr; // release current for GC.
+    vm.initString = copyString ("init", 4);
 
     defineNative ("clock", clockNative);
 }
@@ -74,6 +76,7 @@ void initVM() {
 void freeVM() {
     freeTable (&vm.globals);
     freeTable (&vm.strings);
+    vm.initString = nullptr;
     freeObjects();
 }
 
@@ -120,6 +123,15 @@ static bool callValue (Value callee, int argCount) {
             case OBJ_CLASS: {
                 ObjClass* klass            = AS_CLASS (callee);
                 vm.stackTop[-argCount - 1] = OBJ_VAL (newInstance (klass));
+                Value initializer;
+                if (tableGet (&klass->methods, vm.initString, &initializer)) {
+                    return call (AS_CLOSURE (initializer), argCount);
+                } else if (argCount != 0) {
+                    // default ctor requires zero arguments.
+                    runtimeError ("Expected 0 arguments but got %d", argCount);
+                    return false;
+                }
+
                 return true;
                 break;
             }

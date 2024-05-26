@@ -55,6 +55,7 @@ typedef struct {
 
 typedef enum {
     TYPE_FUNCTION,
+    TYPE_INITIALIZER,
     TYPE_METHOD,
     TYPE_SCRIPT
 } FunctionType;
@@ -241,7 +242,12 @@ static void patchJump (int offset) {
 }
 
 static void emitReturn() {
-    emitByte (OP_NIL);
+    if (current->type == TYPE_INITIALIZER) {
+        emitBytes (OP_GET_LOCAL, 0);
+    } else {
+        emitByte (OP_NIL);
+    }
+
     emitByte (OP_RETURN);
 }
 
@@ -340,6 +346,10 @@ static void returnStatement() {
     if (match (TOKEN_SEMICOLON)) {
         emitReturn();
     } else {
+        if (current->type == TYPE_INITIALIZER) {
+            error ("Can't return a value from class initializer.");
+        }
+
         expression();
         consume (TOKEN_SEMICOLON, "Expect ';' after return value.");
         emitByte (OP_RETURN);
@@ -508,6 +518,9 @@ static void method() {
     uint8_t constant = identifierConstant (&parser.previous);
 
     FunctionType type = TYPE_METHOD;
+    if (parser.previous.length == 4 && memcmp (parser.previous.start, "init", 4) == 0) {
+        type = TYPE_INITIALIZER;
+    }
     function (type);
     emitBytes (OP_METHOD, constant);
 }
