@@ -2,8 +2,14 @@
 
 #include <stddef.h>
 
+#include "object.h"
+#include "value.h"
+
 void* reallocate (void* pointer, size_t oldSize, size_t newSize);
 void freeObjects();
+void markObject (Obj* object);
+void markValue (Value value);
+void collectGarbage();
 
 #define GROW_CAPACITY(capacity) \
     ((capacity) < 8 ? 8 : (capacity) *2)

@@ -6,6 +6,7 @@
 
 #include "common.h"
 #include "compiler.h"
+#include "memory.h"
 #include "scanner.h"
 
 #ifdef DEBUG_PRINT_CODE
@@ -846,4 +847,12 @@ ObjFunction* compile (const char* code) {
 
     ObjFunction* fn = endCompiler();
     return parser.hadError ? NULL : fn;
+}
+
+void markCompilerRoots() {
+    auto* compiler = current;
+    while (compiler != nullptr) {
+        markObject ((Obj*) compiler->function);
+        compiler = compiler->enclosing;
+    }
 }

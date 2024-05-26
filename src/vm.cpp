@@ -58,7 +58,11 @@ static Value clockNative (int n, Value* args) {
 
 void initVM() {
     resetStack();
-    vm.objects = NULL;
+    vm.objects      = NULL;
+    vm.grayCapacity = 0;
+    vm.grayCount    = 0;
+    vm.grayStack    = nullptr;
+
     initTable (&vm.globals);
     initTable (&vm.strings);
 

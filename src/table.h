@@ -16,6 +16,9 @@ typedef struct {
 
 void initTable (Table* table);
 void freeTable (Table* table);
+void tableRemoveWhite (Table* table);
+void markTable (Table* table);
+
 bool tableGet (Table* table, ObjString* key, Value* value);
 /** Returns true if the key was newly added. */
 bool tableSet (Table* table, ObjString* key, Value value);

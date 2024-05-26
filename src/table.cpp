@@ -20,6 +20,23 @@ void freeTable (Table* table) {
     initTable (table);
 }
 
+void tableRemoveWhite (Table* table) {
+    for (int i = 0; i < table->capacity; ++i) {
+        Entry* entry = &table->entries[i];
+        if (entry->key != nullptr && ! entry->key->obj.isMarked) {
+            tableDelete (table, entry->key);
+        }
+    }
+}
+
+void markTable (Table* table) {
+    for (int i = 0; i < table->capacity; ++i) {
+        Entry* entry = &table->entries[i];
+        markObject ((Obj*) entry->key);
+        markValue (entry->value);
+    }
+}
+
 static Entry* findEntry (Entry* entries, int capacity, ObjString* key) {
     uint32_t index   = key->hash % (uint32_t) capacity;
     Entry* tombstone = NULL;
