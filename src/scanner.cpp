@@ -4,19 +4,20 @@
 
 #include "scanner.h"
 
-typedef struct {
-    const char* start;
-    const char* current;
-    int line;
-} Scanner;
+struct Scanner {
+    const char* start { nullptr };
+    const char* current { nullptr };
+    int line { 0 };
 
-Scanner scanner;
+    void init (const char* code) {
+        start = current = code;
+        line = 1;
+    }
 
-void initScanner (const char* code) {
-    scanner.current = code;
-    scanner.start   = code;
-    scanner.line    = 1;
-}
+    Token scan();
+};
+
+static Scanner scanner;
 
 //==============================================================================
 static bool isAlpha (char c) {
@@ -40,7 +41,7 @@ static TokenType checkKeyword (int start, int length, const char* rest, TokenTyp
     return TOKEN_IDENTIFIER;
 }
 
-static Token makeToken (TokenType type) {
+static Token make (TokenType type) {
     Token token;
     token.type   = type;
     token.start  = scanner.start;
@@ -121,7 +122,7 @@ static Token string() {
     if (isAtEnd())
         return errorToken ("Unterminated string.");
     advance(); // close quote;
-    return makeToken (TOKEN_STRING);
+    return make (TOKEN_STRING);
 }
 
 static Token number() {
@@ -132,7 +133,7 @@ static Token number() {
         while (isDigit (peek()))
             advance();
     }
-    return makeToken (TOKEN_NUMBER);
+    return make (TOKEN_NUMBER);
 }
 
 static TokenType identifierType() {
@@ -203,15 +204,20 @@ static Token identifier() {
     while (isAlpha (peek()) || isDigit (peek()))
         advance();
 
-    return makeToken (identifierType());
+    return make (identifierType());
 }
 
 //==============================================================================
-Token scanToken() {
+
+void initScanner (const char* code) {
+    scanner.init (code);
+}
+
+Token Scanner::scan() {
     skipWhitespace();
     scanner.start = scanner.current;
     if (isAtEnd())
-        return makeToken (TOKEN_EOF);
+        return make (TOKEN_EOF);
 
     char c = advance();
 
@@ -222,48 +228,48 @@ Token scanToken() {
 
     switch (c) {
         case '(':
-            return makeToken (TOKEN_LEFT_PAREN);
+            return make (TOKEN_LEFT_PAREN);
             break;
         case ')':
-            return makeToken (TOKEN_RIGHT_PAREN);
+            return make (TOKEN_RIGHT_PAREN);
             break;
         case '{':
-            return makeToken (TOKEN_LEFT_BRACE);
+            return make (TOKEN_LEFT_BRACE);
             break;
         case '}':
-            return makeToken (TOKEN_RIGHT_BRACE);
+            return make (TOKEN_RIGHT_BRACE);
             break;
         case ';':
-            return makeToken (TOKEN_SEMICOLON);
+            return make (TOKEN_SEMICOLON);
             break;
         case ',':
-            return makeToken (TOKEN_COMMA);
+            return make (TOKEN_COMMA);
             break;
 
         case '.':
-            return makeToken (TOKEN_DOT);
+            return make (TOKEN_DOT);
             break;
         case '-':
-            return makeToken (TOKEN_MINUS);
+            return make (TOKEN_MINUS);
             break;
         case '+':
-            return makeToken (TOKEN_PLUS);
+            return make (TOKEN_PLUS);
             break;
         case '/':
-            return makeToken (TOKEN_SLASH);
+            return make (TOKEN_SLASH);
             break;
         case '*':
-            return makeToken (TOKEN_STAR);
+            return make (TOKEN_STAR);
             break;
 
         case '!':
-            return makeToken (match ('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
+            return make (match ('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
         case '=':
-            return makeToken (match ('=') ? TOKEN_EQUAL_EQUAL : TOKEN_EQUAL);
+            return make (match ('=') ? TOKEN_EQUAL_EQUAL : TOKEN_EQUAL);
         case '<':
-            return makeToken (match ('=') ? TOKEN_LESS_EQUAL : TOKEN_LESS);
+            return make (match ('=') ? TOKEN_LESS_EQUAL : TOKEN_LESS);
         case '>':
-            return makeToken (match ('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
+            return make (match ('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
 
         case '"':
             return string();
@@ -272,3 +278,5 @@ Token scanToken() {
 
     return errorToken ("Unexpected character.");
 }
+
+Token scanToken() { return scanner.scan(); }

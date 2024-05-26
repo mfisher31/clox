@@ -1,9 +1,5 @@
 #pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdint.h>
 
 #include "chunk.h"
@@ -47,7 +43,3 @@ void freeVM();
 InterpretResult interpret (const char* code);
 void push (Value value);
 Value pop();
-
-#ifdef __cplusplus
-}
-#endif

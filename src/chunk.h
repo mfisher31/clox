@@ -1,9 +1,5 @@
 #pragma once
 
-#if __cplusplus
-extern "C" {
-#endif
-
 #include <stdint.h>
 
 #include "value.h"
@@ -48,7 +44,3 @@ void initChunk (Chunk* chunk);
 void freeChunk (Chunk* chunk);
 void writeChunk (Chunk* chunk, uint8_t byte, int line);
 int addConstant (Chunk* chunk, Value value);
-
-#if __cplusplus
-}
-#endif

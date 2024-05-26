@@ -1,6 +1,6 @@
 #pragma once
 
-typedef enum {
+typedef enum { /* ORDER */
     /* One char */
     TOKEN_LEFT_PAREN,
     TOKEN_RIGHT_PAREN,
