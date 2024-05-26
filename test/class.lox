@@ -1,0 +1,7 @@
+class HelloWorld {}
+var hw = HelloWorld();
+print hw;
+
+hw.hello = "Hello ";
+hw.world = "World!";
+print hw.hello + hw.world;

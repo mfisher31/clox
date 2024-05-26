@@ -157,6 +157,17 @@ int disassembleInstruction (Chunk* chunk, int offset) {
             return simpleInstruction ("OP_CLOSE_UPVALUE", offset);
             break;
 
+        case OP_CLASS:
+            return constantInstruction ("OP_CLASS", chunk, offset);
+            break;
+
+        case OP_GET_PROPERTY:
+            return constantInstruction ("OP_GET_PROPERTY", chunk, offset);
+            break;
+        case OP_SET_PROPERTY:
+            return constantInstruction ("OP_SET_PROPERTY", chunk, offset);
+            break;
+
         default:
             printf ("Unknown opocode %d\n", instruction);
             return offset + 1;

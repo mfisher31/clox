@@ -138,6 +138,9 @@ static Token number() {
 
 static TokenType identifierType() {
     switch (scanner.start[0]) {
+        case 'c':
+            return checkKeyword (1, 4, "lass", TOKEN_CLASS);
+            break;
         case 'n':
             return checkKeyword (1, 2, "il", TOKEN_NIL);
             break;
