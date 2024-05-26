@@ -26,12 +26,26 @@ static void freeObject (Obj* object) {
             FREE (ObjString, string);
             break;
         }
+
         case OBJ_FUNCTION: {
             ObjFunction* f = (ObjFunction*) object;
             freeChunk (&f->chunk);
             FREE (ObjFunction, f);
             break;
         }
+
+        case OBJ_CLOSURE: {
+            ObjClosure* c = (ObjClosure*) object;
+            FREE_ARRAY (ObjUpvalue*, c->upvalues, c->upvalueCount);
+            FREE (ObjClosure, object); // closure doesn't own the fn
+            break;
+        }
+
+        case OBJ_UPVALUE: {
+            FREE (ObjUpvalue, object);
+            break;
+        }
+
         case OBJ_NATIVE: {
             FREE (ObjNative, object);
             break;

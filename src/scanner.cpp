@@ -11,7 +11,7 @@ struct Scanner {
 
     void init (const char* code) {
         start = current = code;
-        line = 1;
+        line            = 1;
     }
 
     Token scan();
