@@ -80,9 +80,11 @@ static void expression();
 static void statement();
 static void declaration();
 static void function (FunctionType type);
+static void method();
 
 static void defineVariable (uint8_t global);
 static void declareVariable();
+static void namedVariable (Token name, bool canAssign);
 
 static constexpr ParseRule* getRule (TokenType type);
 static void parsePrecedence (Precedence precedence);
@@ -398,13 +400,22 @@ static uint8_t identifierConstant (Token* name) {
 
 static void classDeclaration() {
     consume (TOKEN_IDENTIFIER, "Expect class name");
+    Token className      = parser.previous;
     uint8_t nameConstant = identifierConstant (&parser.previous);
     declareVariable();
 
     emitBytes (OP_CLASS, nameConstant);
     defineVariable (nameConstant);
+
+    namedVariable (className, false);
     consume (TOKEN_LEFT_BRACE, "Expect '{' before class body.");
+
+    while (! check (TOKEN_RIGHT_BRACE) && ! check (TOKEN_EOF)) {
+        method();
+    }
+
     consume (TOKEN_RIGHT_BRACE, "Expext '}' after class bodhy.");
+    emitByte (OP_POP);
 }
 
 static void declaration() {
@@ -472,6 +483,15 @@ static void function (FunctionType type) {
         emitByte (compiler.upvalues[i].isLocal ? 0x01 : 0x00);
         emitByte (compiler.upvalues[i].index);
     }
+}
+
+static void method() {
+    consume (TOKEN_IDENTIFIER, "Expect method name");
+    uint8_t constant = identifierConstant (&parser.previous);
+
+    FunctionType type = TYPE_FUNCTION;
+    function (type);
+    emitBytes (OP_METHOD, constant);
 }
 
 static void statement() {

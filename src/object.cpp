@@ -77,6 +77,13 @@ ObjInstance* newInstance (ObjClass* klass) {
     return inst;
 }
 
+ObjBoundMethod* newBoundMethod (Value receiver, ObjClosure* closure) {
+    ObjBoundMethod* inst = ALLOCATE_OBJ (ObjBoundMethod, OBJ_BOUND_METHOD);
+    inst->receiver       = receiver;
+    inst->method         = closure;
+    return inst;
+}
+
 ObjClosure* newClosure (ObjFunction* function) {
     ObjUpvalue** upvalues = ALLOCATE (ObjUpvalue*, function->upvalueCount);
     for (int i = 0; i < function->upvalueCount; ++i)
@@ -134,6 +141,9 @@ void printObject (Value value) {
             break;
         case OBJ_INSTANCE:
             printf ("%s instance", AS_INSTANCE (value)->klass->name->chars);
+            break;
+        case OBJ_BOUND_METHOD:
+            printFunction (AS_BOUND_METHOD (value)->method->function);
             break;
         case OBJ_STRING:
             printf ("%s", AS_CSTRING (value));

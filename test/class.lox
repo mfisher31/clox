@@ -1,7 +1,12 @@
-class HelloWorld {}
+class HelloWorld {
+    doit() {
+        print "done did it";
+    }
+}
 var hw = HelloWorld();
 print hw;
 
 hw.hello = "Hello ";
 hw.world = "World!";
 print hw.hello + hw.world;
+hw.doit();

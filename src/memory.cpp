@@ -47,12 +47,19 @@ static void freeObject (Obj* object) {
             FREE (ObjClass, object);
             break;
         }
+
         case OBJ_INSTANCE: {
             ObjInstance* i = (ObjInstance*) object;
             freeTable (&i->fields);
             FREE (ObjInstance, object);
             break;
         }
+
+        case OBJ_BOUND_METHOD: {
+            FREE (ObjBoundMethod, object);
+            break;
+        }
+
         case OBJ_STRING: {
             ObjString* string = (ObjString*) object;
             FREE_ARRAY (char, string->chars, string->length + 1);
@@ -153,6 +160,14 @@ static void blackenObject (Obj* object) {
             markTable (&i->fields);
             break;
         }
+
+        case OBJ_BOUND_METHOD: {
+            auto* bound = (ObjBoundMethod*) object;
+            markValue (bound->receiver);
+            markObject ((Obj*) bound->method);
+            break;
+        }
+
         case OBJ_CLOSURE: {
             ObjClosure* closure = (ObjClosure*) object;
             markObject ((Obj*) closure->function);
