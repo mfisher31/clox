@@ -1,12 +1,12 @@
 class HelloWorld {
     doit() {
         print "done did it";
+        print "INSTANCE:";
+        print this;
     }
 }
-var hw = HelloWorld();
-print hw;
 
-hw.hello = "Hello ";
-hw.world = "World!";
-print hw.hello + hw.world;
+var hw = HelloWorld();
 hw.doit();
+
+// print this;
